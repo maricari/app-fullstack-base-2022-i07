@@ -32,7 +32,7 @@ services:
             -                    mysql-server
         ports:
             -                    "8001:80"
-
+            -                    "3306:3306"
     node-backend:
         image:                   abassi/nodejs-server:10.0-dev
         volumes:

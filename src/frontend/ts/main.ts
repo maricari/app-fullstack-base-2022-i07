@@ -22,8 +22,14 @@ class Main implements EventListenerObject, HandlerResponse{
         // Modifica status de un dispositivo
         if (el.id.startsWith('cb_')) {
             let id_disp = el.id.substring(3)
+
             let btn = <HTMLInputElement>el
-            this.cambiarEstadoDispositivo(id_disp, btn.checked);
+            if (btn.type == "checkbox") {
+                this.cambiarEstadoDispositivo(id_disp, btn.type, btn.checked);
+                }
+            else {
+                this.cambiarEstadoDispositivo(id_disp, btn.type, btn.value);
+            }
         }
 
         // Modifica atributos de un dispositivo
@@ -87,18 +93,17 @@ class Main implements EventListenerObject, HandlerResponse{
 
             // estado On/Off o Slicer
             let disp_estado: string;
-            let status_value: number = 35;
-            if (disp.type >3) { // todos On/Off (por ahora)
+            if (disp.state_type == 2 ) { // Intensidad
                 disp_estado = `
                 <a href="#!" class="secondary-content">
                 <form action="#">
                 <p class="range-field">
-                  <input type="range" id="cb_${disp.id}" min="0" max="100" />
+                  <input type="range" id="cb_${disp.id}" value = ${disp.state} min="0" max="100" />
                 </p>
                 </form>
                 </a>`
 
-                } else {
+                } else { //  On/Off
                 disp_estado = `
                 <a href="#!" class="secondary-content">
                 <div class="switch">
@@ -169,13 +174,18 @@ class Main implements EventListenerObject, HandlerResponse{
 
 
     // MODIFICACION DISPOSITIVOS ---------------------------------------------------
-    cambiarEstadoDispositivo(id, estado) {
-        if (estado) {
-            alert(`update status: se prendio el dispositivo ${id}`)
+    cambiarEstadoDispositivo(id, tipo, estado) {
+        if (tipo == "checkbox") {
+            if (estado) {
+                alert(`update status: se prendio el dispositivo ${id}`)
+            }
+            else {
+                alert(`update status: se apago el dispositivo ${id}`)
+            }
         }
         else {
-            alert(`update status: se apago el dispositivo ${id}`)
-        }
+            alert(`update status: el status del dispositivo ${id} se movio a ${estado}`)
+            }
 
         let data = JSON.stringify({id:id, status:estado})
         this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", 'U', this, data)
@@ -219,4 +229,4 @@ window.addEventListener("load", ()=> {
     var instances = M.Modal.init(elemsm, options);
 
     }
-    )
+)
