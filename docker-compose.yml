@@ -18,7 +18,7 @@ services:
             -                    ./db/dumps:/docker-entrypoint-initdb.d
             -                    ./db/data:/var/lib/mysql
         networks:
-            -                    app-fullstack-net
+            -                    app-smart-home
 
     mysql-admin:
         image:                   phpmyadmin/phpmyadmin
@@ -27,7 +27,7 @@ services:
             PMA_PORT:            3306
             MYSQL_ROOT_PASSWORD: userpass
         networks:
-            -                    app-fullstack-net
+            -                    app-smart-home
         depends_on:
             -                    mysql-server
         ports:
@@ -39,7 +39,7 @@ services:
             -                    ./src/backend:/home/node/app/src
             -                    ./src/frontend:/home/node/app/static
         networks:
-            -                    app-fullstack-net
+            -                    app-smart-home
         depends_on:
             -                    mysql-server
         ports: 
@@ -47,5 +47,5 @@ services:
         command:                 nodemon /home/node/app/src/index.js
 
 networks:
-    app-fullstack-net:
+    app-smart-home:
         driver:                  bridge

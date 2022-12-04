@@ -8,3 +8,21 @@ body {
 main {
     flex: 1 0 auto;
 }
+
+.imgloading {
+    width: 100px;
+    height: 100px;
+    position: fixed;
+    top: 50%;
+    left:40%;
+}
+
+img {
+    width: 30px;
+    height: 30px;
+}
+
+span.nombre_disp{
+    color: rgb(119, 25, 114);
+    font-weight: bold;
+}
