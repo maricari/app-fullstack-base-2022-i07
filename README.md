@@ -178,7 +178,7 @@ Para cambiar el estado de un dispositivo, el usuario hace click en el interrupto
 
 Para dar de alta un dispositivo, el usuario debe completar un formulario modal el cual le permite ingresar el nombre y la descripción, y elegir el tipo de dispositivo y el tipo de estado a partir de una lista desplegable. Estas listas son fijas (es decir, no es posible agregar un tipo de dispositivo nuevo desde la interfaz de usuario). En caso de no encontrar el valor requerido, se puede indicar `Otro`. Con todos estos datos, la confirmación del usuario dispara la ejecución del request `devicesNew`.
 
-![alta](doc/webapp-example-1.png)
+![alta](doc/webapp-example-modal.png)
 
 **Baja de dispositivos**
 
