@@ -8,12 +8,12 @@ Aplicación Web Smart Homes
 Este proyecto es una aplicación Web Fullstack que se ejecuta sobre el ecosistema `Docker`. Está compuesta por un compilador de `TypeScript` que permite utilizar este superset de JavaScript para poder programar un `cliente web`. También tiene un servicio en `NodeJS` que permite ejecutar código en backend y al mismo tiempo disponibilizar el código del cliente web para interactar con el servicio. Además tiene una `base de datos` MySQL que puede interactuar con el backend para guardar y consultar datos, y de manera adicional trae un `administrador` de base de datos para poder administrar o consultar la base desde un explorador.
 
 El proyecto consiste en una aplicación IoT que permite, desde un navegador, controlar el estado de los devices de un hogar inteligente - *como pueden ser luces, TVs, ventiladores, persianas, enchufes y otros* -.
-Desde la aplicación se puede controlar el estado de los mismos que, dependiendo de cada dispositivo, puede ser un estado On/Off, o puede ser un valor gradual de 0 a 100. Este valor corresponde por ejemplo a la intensidad de una luz, o el grado de apertura de un portón.
+Desde la aplicación se puede controlar el estado de los mismos que, dependiendo de cada dispositivo, puede ser un estado On/Off, o puede ser un valor gradual de 0 a 100%. Este valor corresponde por ejemplo a la intensidad de una luz, o el grado de apertura de un portón.
 Además de controlar el estado, la página permite crear nuevos dispositivos o dar de baja los existentes.
 
 En esta imagen se puede ver una captura de pantalla del cliente web que controla los artefactos del hogar.
 
-![architecture](doc/webapp-example-1.png)
+![architecture](doc/webapp-example.png)
 
 
 ## Comenzando 🚀
@@ -146,40 +146,141 @@ En esta sección se describen los detalles específicos de funcionamiento del c�
 
 ### Agregar un dispositivo
 
-Completá los pasos para agregar un dispositivo desde el cliente web.
+Para agregar un dispositivo desde el cliente web se deberá presionar el botón DISPOSITIVO NUEVO, e ingresar los datos:
+- nombre
+- tipo de dispositivo: Los tipos disponibles son Luz, Ventilación, Persiana, Riego, Otro.
+- Tipo de estado: On/Off (si es un dispositivo que únicamente se controla con un interruptor), o Intensidad (si el valor se puede graduar - por ejemplo dimerizar las luces o regular la apertura de cortinas -
+
+### Dar de baja un dispositivo
+
+Cualquiera de los dispositivos puede darse de baja apretando el correspondiente botón BORRAR.
+
+### Modificar el estado de un dispositivo
+
+Desde el cliente web se puede modificar el estado de cualquiera de los dispositivos. En el caso de ser uno de tipo On/Off, bastará con presionar el switch correspondiente. En el caso de los dispositivos regulables, el estado se actualiza mediante el slicer. Por ejemplo  para una cortina el marcador colocado en el medio indicará que la misma debe estar a mitad del recorrido. En el caso de una lámpara significa que la misma está dimerizada al 50%.
 
 ### Frontend
 
-Completá todos los detalles sobre cómo armaste el frontend, sus interacciones, etc.
+La página consiste en un listado de los dispositivos disponibles con la posibilidad de dar de alta nuevos dispositivos, y dar de baja o modificar el estado de los existentes.
+
+**Carga de la página**
+
+Cada vez que se agrega o se borra un dispositivo, la página  se recarga para poder ver siempre toda la información actualizada.
+Para armar el listado de dispositivos que se muestran se ejecuta el request `devices` que devuelve la lista completa.
+
+Los tipos de dispositivo están predefinidos: Luz, ventilación, etc. Internamente cada tipo de dispositivo tiene un código, por ejemplo `1`. Los íconos que se muestran en la interfaz se toman de una carpeta de imágenes donde los nombres de las imágenes se corresponden con el tipo, por ejemplo `1.jpg` corresponde al tipo de dispositivo con código `1` que en este caso es Luz.
+
+**Cambio de estado de dispositivos**
+
+Para cambiar el estado de un dispositivo, el usuario hace click en el interruptor o desliza el marcador del slicer según corresponda. Para actualizar el estado el front determina cuál es el tipo de dispositivo (para saber si debe actualizar el estado o la intensidad) y luego ejecuta el request `devicesChange`. 
+
+**Alta de dispositivos**
+
+Para dar de alta un dispositivo, el usuario debe completar un formulario modal el cual le permite ingresar el nombre y la descripción, y elegir el tipo de dispositivo y el tipo de estado a partir de una lista desplegable. Estas listas son fijas (es decir, no es posible agregar un tipo de dispositivo nuevo desde la interfaz de usuario). En caso de no encontrar el valor requerido, se puede indicar `Otro`. Con todos estos datos, la confirmación del usuario dispara la ejecución del request `devicesNew`.
+
+![alta](doc/webapp-example-1.png)
+
+**Baja de dispositivos**
+
+Para dar de baja, se obtiene el `id` del dispositivo seleccionado y se ejecuta el request `devicesDelete`.
+
 
 ### Backend
 
-Completá todos los detalles de funcionamiento sobre el backend, sus interacciones con el cliente web, la base de datos, etc.
+Se explican aquí todos los detalles de funcionamiento sobre el backend, sus interacciones con el cliente web y la base de datos.
+
+<details><summary><b>Ver detalles de la base de datos</b></summary><br>
+
+La base de datos tiene una única tabla llamada `Devices` con las siguientes columnas:
+-  `id`: identificador único (autonumérico)
+- `type`: Código correspondiente al tipo de dispositivo: luces, ventilación, etc.
+- `name`: Nombre del dispositivo
+- `description`: Descripción
+- `state_type`: Tipo de estado. 1: On/off, 2: Intensidad
+- `state`: Estado. Es un valor booleano. `Falso`: dispositivo apagado, `Verdadero`: dispositivo encendido.
+- `intensidad`: Valor de la intensidad de `0` a `100`. (únicamente para los dispositivos de tipo 2)
+
+La tabla `Devices` ya viene precargada con algunos dispositivos de ejemplo.
+
+</details>
 
 <details><summary><b>Ver los endpoints disponibles</b></summary><br>
 
-Completá todos los endpoints del backend con los metodos disponibles, los headers y body que recibe, lo que devuelve, ejemplos, etc.
+El backend soporta los siguientes endpoints:
 
-1) Devolver el estado de los dispositivos.
+1) Devolver la lista de dispositivos.
+* Método: GET
+* Entrypoint: /devices
+* Parámetros: Ninguno
+* Respuesta: Lista de dispositivos
+* Ejemplo de respuesta:
 
-```json
-{
-    "method": "get",
-    "request_headers": "application/json",
-    "request_body": "",
-    "response_code": 200,
-    "request_body": {
-        "devices": [
-            {
-                "id": 1,
-                "status": true,
-                "description": "Kitchen light"
-            }
-        ]
-    },
-}
-``` 
+```
+...
+status: 200
+responseText:
+   [{"id":1,
+     "type":1,
+     "name":"Luces exterior",
+     "description":"Luces jardín",
+     "state_type":2,
+     "state":1,
+     "intensidad":97},
+    {"id":1,
+     "type":1,
+     "name":"Luz entrada",
+     "description":"Luz entrada principal",
+     "state_type":1,
+     "state":1,
+     "intensidad":0},
+     ...
+     ]
+```
 
+2) Alta de dispositivo.
+* Método: POST
+* Entrypoint: /devicesNew
+* Request_headers: application/json
+* Ejemplo de body:
+
+```
+ { type: '4',
+   name: 'TV',
+   description: 'TV playroom',
+   state_type: ''
+   }
+```
+
+3) Modificación de estado.
+* Método: PUT
+* Entrypoint: /devicesChange
+* Request_headers: application/json
+* Ejemplo de body:
+
+```
+{ id: '7',
+  status: true,
+  intensidad: 0 }
+
+```
+
+4) Baja de dispositivo.
+* Método: DELETE
+* Entrypoint: /devicesDelete
+* Request_headers: application/json
+* Ejemplo de body:
+
+```
+ { id: '10' }
+```
+
+</details>
+
+<details><summary><b>Ver algunas propuestas de mejora</b></summary><br>
+
+* Implementar nuevos tipos de dispositivo. Se puede hacer `hardcoded` como los que están ahora, o se puede adaptar la aplicación para que permita también mantener una tabla de tipos de dispositivos en la base de datos, que se levante en forma dinámica desde la aplicación.
+* Validar los datos ingresados por el usuario. Actualmente no se hacen validaciones, y solamente las operaciones son rechazadas desde el motor de base de datos en caso de no cumplir con las restricciones (por ejemplo valor no nulo).
+* Permitir la modificación de atributos de los dispositivos. Desde el frontend sería una funcionalidad nueva. Desde el backend, implicaría modificar el endpoint `devicesChange` para admitir más/otras columnas.
 </details>
 
 </details>
@@ -187,7 +288,7 @@ Completá todos los endpoints del backend con los metodos disponibles, los heade
 
 ## Tecnologías utilizadas 🛠️
 
-En esta sección podés ver las tecnologías más importantes utilizadas.
+A continuación se listan las tecnologías más importantes utilizadas en el proyecto.
 
 <details><summary><b>Ver la lista completa de tecnologías</b></summary><br>
 
