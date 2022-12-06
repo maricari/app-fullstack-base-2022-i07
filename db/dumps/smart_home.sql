@@ -33,24 +33,29 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `Devices` (
-  `id` int(11) NOT NULL,
-  `name` varchar(64) NOT NULL,
-  `description` varchar(128) NOT NULL,
-  `state` int(11) NOT NULL,
-  `type` int(11) NOT NULL
+  `id` int not null,
+  `type` tinyint not null,                         -- luces, ventilación, etc.
+  `name` varchar(64) not null,                     -- nombre del dispositivo
+  `description` varchar(128) not null,             -- descripción
+  `state_type` tinyint not null,                   -- 1: on/off, 2: intensidad
+  `state` boolean not null default false,          -- false: off, true: on
+  `intensidad` decimal(4,2) not null default 0.00  -- 0 a 1 (solo para state_type=2)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 
 --
 -- Dumping data for table `Devices`
 --
 
-INSERT INTO `Devices` (`id`, `name`, `description`, `state`, `type`) VALUES
-(1, 'Lampara 1', 'Luz living', 1, 0),
-(2, 'Lampara 2', 'Luz cocina', 0, 0),
-(3, 'Velador', 'Velador living', 1, 0),
-(4, 'Persiana 1', 'Persiana living', 1, 1),
-(5, 'Persiana 2', 'Persiana de la cocina', 1, 1),
-(6, 'Persiana 3', 'Persiana balcon', 0, 1);
+INSERT INTO `Devices` (`id`, `type`, `name`, `description`, `state_type`, `state`, `intensidad`) VALUES
+(1,1, 'Luces interior', 'Luz living y comedor', 1, false, 0),
+(2,1, 'Luces exterior', 'Luces jardín', 2, false, 1),
+(3,1, 'Luz entrada', 'Luz entrada principal', 1, false, 1),
+(4,2, 'AA', 'Aire acondicionado central', 1, false, 1),
+(5,3, 'Persiana 1', 'Persiana living', 1, false, 1),
+(6,3, 'Persiana 2', 'Persiana habitación', 1, false, 1);
+
 
 --
 -- Indexes for dumped tables
@@ -70,7 +75,7 @@ ALTER TABLE `Devices`
 -- AUTO_INCREMENT for table `Devices`
 --
 ALTER TABLE `Devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
