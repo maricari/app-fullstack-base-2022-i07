@@ -4,7 +4,7 @@ class Framework{
         metodo: GET, POST, PUT, DELETE
         */
         console.log(`Request (${url})`)
-        
+
         let req = new XMLHttpRequest();
         req.onreadystatechange = ()=>{
             if (req.readyState == 4) {
@@ -21,11 +21,12 @@ class Framework{
         req.open(metodo, url, true);
         if (data!= undefined) {
             req.setRequestHeader("Content-Type", "application/json")
-            req.send(data);    
+            req.send(data);   
             }
         else {
-            req.send(); 
+            req.send();
             }
+ 
         }
 
     public showLoad() {

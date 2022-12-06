@@ -11,9 +11,6 @@ app.use(express.json());
 // to serve static files
 app.use(express.static('/home/node/app/static/'));
 
-// devices (in memory)
-var devices = require('./datos.js')
-
 //=======[ Main module code ]==================================================
 
 app.get('/devices/', function(req, res, next) {
