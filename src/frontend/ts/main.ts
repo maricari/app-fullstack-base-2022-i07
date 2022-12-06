@@ -16,6 +16,7 @@ class Main implements EventListenerObject, HandlerResponse{
             let tipo_estado = (<HTMLInputElement>document.getElementById("disp_tipo_estado")).value;
             let descripcion = (<HTMLInputElement>document.getElementById("disp_desc")).value;
             this.crearDispositivo(nombre, tipo, tipo_estado, descripcion);
+            this.consultarDispositivos();
         }
 
         // Modifica status de un dispositivo
@@ -31,22 +32,6 @@ class Main implements EventListenerObject, HandlerResponse{
             }
         }
 
-        // Modifica atributos de un dispositivo
-        if (el.id.startsWith('U_')) {
-            let id_disp = el.id.substring(2)
-            let el_name = "name_" + id_disp
-            let el_desc = "desc_" + id_disp
-            let nombre = (<HTMLSpanElement>document.getElementById(el_name)).firstChild.nodeValue;
-            let descripcion = (<HTMLParagraphElement>document.getElementById(el_desc)).textContent;
-            let m_disp_name = document.getElementById("m_disp_name");
-            let m_disp_desc = document.getElementById("m_disp_desc");
-            m_disp_name.innerHTML = nombre
-            m_disp_desc.innerHTML = descripcion
-            alert(m_disp_name + ' ' + m_disp_desc)
-
-            // this.modificaDispositivo(id_disp, nombre, descripcion);
-        }
-
         // Borra un dispositivo
         if (el.id.startsWith('D_')) {
             let id_disp = el.id.substring(2)
@@ -55,8 +40,6 @@ class Main implements EventListenerObject, HandlerResponse{
 
         }
 
-        // console.log(e.type +' ' + e.target)
-        // alert(`handling event type ${e.type} en main`)
     }
     
     constructor() {        
@@ -98,7 +81,7 @@ class Main implements EventListenerObject, HandlerResponse{
                 <a href="#!" class="secondary-content">
                 <form action="#">
                 <p class="range-field">
-                  <input type="range" id="cb_${disp.id}" value = ${disp.state} min="0" max="100" />
+                  <input type="range" id="cb_${disp.id}" value = ${disp.intensidad} min="0" max="100" />
                 </p>
                 </form>
                 </a>`
@@ -121,8 +104,8 @@ class Main implements EventListenerObject, HandlerResponse{
             grilla +=`
             <li class="collection-item avatar">
             <img src="static/images/${imagen}" alt="" class="circle">
-            <span class="title nombre_disp" id="name_${disp.id}">${disp.name}</span>
-            <p id="desc_${disp.id}">${disp.description} <br>
+            <span contenteditable="false" class="title nombre_disp" id="name_${disp.id}">${disp.name}</span>
+            <p contenteditable="false" id="desc_${disp.id}">${disp.description} <br>
             </p>
             ${disp_estado}
             <a class="waves-effect waves-light btn-small materialize-red" id="D_${disp.id}" >Borrar</a>                    
@@ -131,9 +114,6 @@ class Main implements EventListenerObject, HandlerResponse{
             }
         grilla +=`</ul>`
         caja.innerHTML = grilla
-        // <a class="waves-effect waves-light btn-small" id="U_${disp.id}" >Modificar</a>
-        // <a class="waves-effect waves-light btn-small modal-trigger id="H_${disp.id}" href="#modalFormUpdate">Modificar</a>
-
 
         // armo los listeners para los botones
         for (let disp of arrDevices) {
@@ -141,22 +121,41 @@ class Main implements EventListenerObject, HandlerResponse{
             let btn = document.getElementById(`cb_${disp.id}`)
             btn.addEventListener("click", this);
 
-            // modificar atributos
-            // let btn2 = document.getElementById(`U_${disp.id}`)
-            // btn2.addEventListener("click", this);
-
             // borrar dispositivo
-            let btn3 = document.getElementById(`D_${disp.id}`)
-            btn3.addEventListener("click", this);
+            let btn2 = document.getElementById(`D_${disp.id}`)
+            btn2.addEventListener("click", this);
 
             }     
         } // end cargarGrilla
 
+
+    vaciarForm() {
+ 
+        let nombre = <HTMLInputElement>document.getElementById("disp_nombre");
+        let descripcion = <HTMLInputElement>document.getElementById("disp_desc");
+        let tipo = <HTMLInputElement>document.getElementById("disp_tipo");
+        let tipo_estado = <HTMLInputElement>document.getElementById("disp_tipo_estado");
+
+        nombre.value = "";
+        descripcion.value = "";
+        tipo.value = "";
+        tipo_estado.value = "";        
+
+    }
+
     // ALTA DISPOSITIVOS -----------------------------------------------------------
 
     crearDispositivo(nombre, tipo, tipo_estado, descripcion) {
+
         let data = JSON.stringify({type: tipo, name:nombre, description:descripcion, state_type:tipo_estado})
         this.f.ejecutarRequest("POST", "http://localhost:8000/devicesNew", this, data)
+        this.confirmarAccion("El dispositivo fue agregado correctamente a la base de datos.")
+
+        let form = <HTMLDivElement>document.getElementById("modalForm")
+        var instance = M.Modal.getInstance(form);
+        instance.close();
+        this.vaciarForm();
+
         }
 
     // MODIFICACION DISPOSITIVOS ---------------------------------------------------
@@ -166,20 +165,25 @@ class Main implements EventListenerObject, HandlerResponse{
         this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", this, data)
         }
 
-    modificaDispositivo(id, nombre, descripcion) {
-        alert('modifica=> ' + id + ' ' + nombre + ' ' + descripcion)
-        // pendiente 
-        let data = JSON.stringify({id: id, name:nombre, description:descripcion})
-        this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", this, data)
-        }
-
     // BAJA DISPOSITIVOS -----------------------------------------------------------
   
     borrarDispositivo(id) {
         let data = JSON.stringify({id:id})
         this.f.ejecutarRequest("DELETE", "http://localhost:8000/devicesDelete", this, data)
+        this.confirmarAccion("El dispositivo fue eliminado de la base de datos.")
     }
 
+
+    confirmarAccion(mensaje = "Operación confirmada.") {
+
+        let popup_mensaje = <HTMLDivElement>document.getElementById("popup_mensaje")
+        popup_mensaje.innerHTML = mensaje
+
+        let popup_confirmar = <HTMLDivElement>document.getElementById("popup_confirmar")
+        var instance = M.Modal.getInstance(popup_confirmar);
+        instance.open();
+
+    }
 
 } // fin de la clase Main
 
@@ -187,6 +191,7 @@ class Main implements EventListenerObject, HandlerResponse{
 window.addEventListener("load", ()=> {
     let main:Main = new Main();
     main.consultarDispositivos();
+    main.vaciarForm();
 
     let btn2 = document.getElementById("confirmar_alta")
     btn2.addEventListener("click", main);

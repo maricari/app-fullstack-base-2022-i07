@@ -3,12 +3,15 @@ class Framework{
         /*
         metodo: GET, POST, PUT, DELETE
         */
-
+        console.log(`Request (${url})`)
+        
         let req = new XMLHttpRequest();
         req.onreadystatechange = ()=>{
             if (req.readyState == 4) {
                 if(req.status == 200) {
-                    if (metodo == 'GET') {accion.cargarGrilla(req.responseText)}
+                    if (url.endsWith('/devices')) {
+                        accion.cargarGrilla(req.responseText)
+                    } 
                     }
                 else {
                     console.log("error en la consulta")
