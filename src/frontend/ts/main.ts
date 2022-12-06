@@ -8,7 +8,6 @@ class Main implements EventListenerObject, HandlerResponse{
         console.log()
         let el:HTMLElement;
         el = <HTMLElement> e.target
-        console.log('handle event', e.type, el.id, el.textContent)
 
         // Alta nuevo dispositivo
         if (el.id == 'confirmar_alta') {
@@ -28,7 +27,7 @@ class Main implements EventListenerObject, HandlerResponse{
                 this.cambiarEstadoDispositivo(id_disp, btn.type, btn.checked);
                 }
             else {
-                this.cambiarEstadoDispositivo(id_disp, btn.type, btn.value);
+                this.cambiarEstadoDispositivo(id_disp, btn.type,(+btn.value >0) , +btn.value);
             }
         }
 
@@ -52,6 +51,8 @@ class Main implements EventListenerObject, HandlerResponse{
         if (el.id.startsWith('D_')) {
             let id_disp = el.id.substring(2)
             this.borrarDispositivo(id_disp);
+            this.consultarDispositivos();
+
         }
 
         // console.log(e.type +' ' + e.target)
@@ -64,12 +65,11 @@ class Main implements EventListenerObject, HandlerResponse{
     // CONSULTA DISPOSITIVOS -------------------------------------------------------
     consultarDispositivos() {
         this.f.showLoad();        
-        this.f.ejecutarRequest("GET", "http://localhost:8000/devices", 'R', this)
+        this.f.ejecutarRequest("GET", "http://localhost:8000/devices", this)
         this.f.hideLoad();
     }
 
     cargarGrilla(dispositivosString:string) {
-
         let arrDevices: Array<Device>
         arrDevices = JSON.parse(dispositivosString)
         let caja = document.getElementById("cajaDispositivos");
@@ -140,7 +140,6 @@ class Main implements EventListenerObject, HandlerResponse{
             // update status
             let btn = document.getElementById(`cb_${disp.id}`)
             btn.addEventListener("click", this);
-            console.log(btn)
 
             // modificar atributos
             // let btn2 = document.getElementById(`U_${disp.id}`)
@@ -150,60 +149,35 @@ class Main implements EventListenerObject, HandlerResponse{
             let btn3 = document.getElementById(`D_${disp.id}`)
             btn3.addEventListener("click", this);
 
-        }     
-
-        // provisorio, arreglar
-        /*
-        let slider = document.getElementById("sl_1");
-        let output = document.getElementById("val_1");
-        output.innerHTML = slider.value;
-            
-        slider.oninput = function() {
-              output.innerHTML = this.value;
-            }
-        */
+            }     
         } // end cargarGrilla
 
     // ALTA DISPOSITIVOS -----------------------------------------------------------
-    crearDispositivo(nombre, tipo, tipo_estado, descripcion) {
-        alert('alta=> ' + nombre + ' ' + tipo + ' ' + tipo_estado + ' ' + descripcion)
-        // pendiente. handle tipo_estado
-        let data = JSON.stringify({name:nombre, type: tipo, description:descripcion})
-        this.f.ejecutarRequest("POST", "http://localhost:8000/devicesNew", 'C',  this, data)
-        }
 
+    crearDispositivo(nombre, tipo, tipo_estado, descripcion) {
+        let data = JSON.stringify({type: tipo, name:nombre, description:descripcion, state_type:tipo_estado})
+        this.f.ejecutarRequest("POST", "http://localhost:8000/devicesNew", this, data)
+        }
 
     // MODIFICACION DISPOSITIVOS ---------------------------------------------------
-    cambiarEstadoDispositivo(id, tipo, estado) {
-        if (tipo == "checkbox") {
-            if (estado) {
-                alert(`update status: se prendio el dispositivo ${id}`)
-            }
-            else {
-                alert(`update status: se apago el dispositivo ${id}`)
-            }
-        }
-        else {
-            alert(`update status: el status del dispositivo ${id} se movio a ${estado}`)
-            }
 
-        let data = JSON.stringify({id:id, status:estado})
-        this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", 'U', this, data)
+    cambiarEstadoDispositivo(id, tipo, estado, intensidad = 0) {
+        let data = JSON.stringify({id:id, status:estado, intensidad:intensidad})
+        this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", this, data)
         }
 
     modificaDispositivo(id, nombre, descripcion) {
         alert('modifica=> ' + id + ' ' + nombre + ' ' + descripcion)
-        // pendiente. handle control
+        // pendiente 
         let data = JSON.stringify({id: id, name:nombre, description:descripcion})
-        this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", 'U', this, data)
+        this.f.ejecutarRequest("PUT", "http://localhost:8000/devicesChange", this, data)
         }
 
     // BAJA DISPOSITIVOS -----------------------------------------------------------
   
     borrarDispositivo(id) {
         let data = JSON.stringify({id:id})
-        alert(`Borrar el dispositivo ${id}`)
-        this.f.ejecutarRequest("DELETE", "http://localhost:8000/devicesDelete", 'D', this, data)
+        this.f.ejecutarRequest("DELETE", "http://localhost:8000/devicesDelete", this, data)
     }
 
 

@@ -1,24 +1,14 @@
 class Framework{
-    public ejecutarRequest(metodo:string, url:string, operacion: string, accion?: HandlerResponse, data?:any) {
+    public ejecutarRequest(metodo:string, url:string, accion?: HandlerResponse, data?:any) {
         /*
         metodo: GET, POST, PUT, DELETE
-
-        operacion
-        'R' : 'consulta_dispositivos'
         */
 
         let req = new XMLHttpRequest();
         req.onreadystatechange = ()=>{
             if (req.readyState == 4) {
                 if(req.status == 200) {
-                    switch ( operacion ) {
-                        case 'R': // read
-                            accion.cargarGrilla(req.responseText)
-                            break;
-                        default: 
-                            // 
-                            break;
-                     }
+                    if (metodo == 'GET') {accion.cargarGrilla(req.responseText)}
                     }
                 else {
                     console.log("error en la consulta")
