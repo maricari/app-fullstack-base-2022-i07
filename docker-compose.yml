@@ -19,12 +19,10 @@ services:
             -                    ./db/data:/var/lib/mysql
         networks:
             -                    app-smart-home
-        ports:
-            -                    "3306:3306"
     mysql-admin:
         image:                   phpmyadmin/phpmyadmin
         environment: 
-            PMA_HOST:            localhost
+            PMA_HOST:            mysql-server
             PMA_PORT:            3306
             MYSQL_ROOT_PASSWORD: userpass
         networks:
